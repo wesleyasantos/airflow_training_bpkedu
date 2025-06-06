@@ -117,6 +117,6 @@ Se houver problemas de permissão:
 5. Ative e execute o DAG básico (`exemplo_basico`)
 6. Ative e execute o DAG com PostgreSQL (`exemplo_postgres`)
 7. Verifique os arquivos gerados nos diretórios:
-   - `C:\Users\TI-00\Desktop\Airflow - Pipeline de Dados\data\raw\`
-   - `C:\Users\TI-00\Desktop\Airflow - Pipeline de Dados\data\processado\`
-   - `C:\Users\TI-00\Desktop\Airflow - Pipeline de Dados\data\transformed\`
+   - `seucaminho\data\raw\`
+   - `seucaminho\data\processado\`
+   - `seucaminho\data\transformed\`
