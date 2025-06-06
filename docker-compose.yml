@@ -1,0 +1,97 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: airflow_postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+    restart: always
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    depends_on:
+      - postgres
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: always
+
+  airflow-webserver:
+    image: apache/airflow:2.5.0
+    container_name: airflow-webserver
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - _AIRFLOW_DB_UPGRADE=true
+      - _AIRFLOW_WWW_USER_CREATE=true
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin
+      - AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
+      - AIRFLOW_HOME=/opt/airflow
+    volumes:
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/dags:/opt/airflow/dags
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/logs:/opt/airflow/logs
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/plugins:/opt/airflow/plugins
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/data:/opt/airflow/data
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/scripts:/opt/airflow/scripts
+    ports:
+      - "8080:8080"
+    command: webserver
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  airflow-scheduler:
+    image: apache/airflow:2.5.0
+    container_name: airflow-scheduler
+    depends_on:
+      - airflow-webserver
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
+      - AIRFLOW_HOME=/opt/airflow
+    volumes:
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/dags:/opt/airflow/dags
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/logs:/opt/airflow/logs
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/plugins:/opt/airflow/plugins
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/data:/opt/airflow/data
+      - C:/Users/TI-00/Desktop/Airflow - Pipeline de Dados/scripts:/opt/airflow/scripts
+    command: scheduler
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+  pgadmin_data: 
